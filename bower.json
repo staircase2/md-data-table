@@ -1,6 +1,6 @@
 {
   "name": "angular-material-data-table",
-  "version": "0.7.6",
+  "version": "0.7.6-2",
   "description": "Material Design data table.",
   "main": [
     "dist/md-data-table.min.js",
@@ -8,12 +8,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/daniel-nagy/md-data-table.git"
+    "url": "git://github.com/staircase2/md-data-table.git"
   },
   "authors": [
-    "Daniel Nagy"
+    "Ruiwen Chua"
   ],
-  "homepage": "http://danielnagy.me/md-data-table",
+  "homepage": "https://github.com/staircase2/md-data-table",
   "license": "MIT",
   "keywords": [
     "material",
