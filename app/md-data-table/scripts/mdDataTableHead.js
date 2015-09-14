@@ -1,4 +1,4 @@
-angular.module('md.data.table').directive('mdTableHead', ['$document', '$mdTable', '$q', function ($document, $mdTable, $q) {
+angular.module('md.data.table').directive('mdTableHead', ['$document', '$mdTable', '$q', '$filter', function ($document, $mdTable, $q, $filter) {
   'use strict';
 
   function postLink(scope, element, attrs, tableCtrl) {
@@ -94,13 +94,15 @@ angular.module('md.data.table').directive('mdTableHead', ['$document', '$mdTable
       var ngRepeat = tElement.parent().find('tbody').find('tr').attr('ng-repeat');
       
       if(ngRepeat) {
-        var items = $mdTable.parse(ngRepeat).items;
+        mdTableRepeat = $mdTable.parse(ngRepeat);
+        var items = mdTableRepeat.items;
+        var filter = mdTableRepeat.filter;
         var checkbox = angular.element('<md-checkbox></md-checkbox>');
         
         checkbox.attr('aria-label', 'Select All');
-        checkbox.attr('ng-click', 'toggleAll(' + items + ')');
+        checkbox.attr('ng-click', 'toggleAll(' + items + ',' + filter + ')');
         checkbox.attr('ng-class', '[mdClasses, {\'md-checked\': allSelected()}]');
-        checkbox.attr('ng-disabled', '!getCount(' + items + ')');
+        checkbox.attr('ng-disabled', '!getCount(' + items + ',' + filter + ')');
         
         tElement.find('tr').prepend(angular.element('<th></th>').append(checkbox));
       }

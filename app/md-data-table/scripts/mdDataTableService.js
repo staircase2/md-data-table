@@ -7,6 +7,8 @@ angular.module('md.data.table').factory('$mdTable', function () {
     this._tokens = ngRepeat.split(' ');
     this._iterator = 0;
     
+    this.filter = null;
+
     this.item = this.current();
     while(this.hasNext() && this.getNext() !== 'in') {
       this.item += this.current();
@@ -16,6 +18,11 @@ angular.module('md.data.table').factory('$mdTable', function () {
     while(this.hasNext() && ['|', 'track'].indexOf(this.getNext()) === -1) {
       this.items += this.current();
     }
+
+    try {
+        this.filter = ngRepeat.match(/filter:([^ |]+)/)[1];
+    }
+    catch(e) {}
   }
   
   Repeat.prototype.current = function () {

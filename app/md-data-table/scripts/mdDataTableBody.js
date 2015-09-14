@@ -1,4 +1,4 @@
-angular.module('md.data.table').directive('mdTableBody', function () {
+angular.module('md.data.table').directive('mdTableBody', ['$filter', function ($filter) {
   'use strict';
   
   function postLink(scope, element, attrs, tableCtrl) {
@@ -11,15 +11,16 @@ angular.module('md.data.table').directive('mdTableBody', function () {
         var model = {};
         var count = 0;
         
-        var getSelectableItems = function(items) {
-          return items.filter(function (item) {
+        var getSelectableItems = function(items, filter) {
+          return $filter('filter')(items.filter(function (item) {
             model[ngRepeat.item] = item;
             return !scope.disable(model);
-          });
+          }), filter);
         };
         
-        scope.$parent.getCount = function(items) {
-          return (count = items.reduce(function(sum, item) {
+        scope.$parent.getCount = function(items, filter) {
+          var filtered = $filter('filter')(items, filter);
+          return (count = filtered.reduce(function(sum, item) {
             model[ngRepeat.item] = item;
             return scope.disable(model) ? sum : ++sum;
           }, 0));
@@ -29,8 +30,8 @@ angular.module('md.data.table').directive('mdTableBody', function () {
           return count && count === tableCtrl.selectedItems.length;
         };
         
-        scope.$parent.toggleAll = function (items) {
-          var selectableItems = getSelectableItems(items);
+        scope.$parent.toggleAll = function (items, filter) {
+          var selectableItems = getSelectableItems(items, filter);
           
           if(selectableItems.length === tableCtrl.selectedItems.length) {
             tableCtrl.selectedItems.splice(0);
@@ -59,4 +60,4 @@ angular.module('md.data.table').directive('mdTableBody', function () {
       disable: '&mdDisableSelect'
     }
   };
-});
+}]);
