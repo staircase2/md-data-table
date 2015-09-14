@@ -139,7 +139,7 @@ angular.module('md.data.table')
   angular.forEach($element.find('th'), self.setColumns);
 }]);
 
-angular.module('md.data.table').directive('mdTableBody', function () {
+angular.module('md.data.table').directive('mdTableBody', ['$filter', function ($filter) {
   'use strict';
   
   function postLink(scope, element, attrs, tableCtrl) {
@@ -152,15 +152,16 @@ angular.module('md.data.table').directive('mdTableBody', function () {
         var model = {};
         var count = 0;
         
-        var getSelectableItems = function(items) {
-          return items.filter(function (item) {
+        var getSelectableItems = function(items, filter) {
+          return $filter('filter')(items.filter(function (item) {
             model[ngRepeat.item] = item;
             return !scope.disable(model);
-          });
+          }), filter);
         };
         
-        scope.$parent.getCount = function(items) {
-          return (count = items.reduce(function(sum, item) {
+        scope.$parent.getCount = function(items, filter) {
+          var filtered = $filter('filter')(items, filter);
+          return (count = filtered.reduce(function(sum, item) {
             model[ngRepeat.item] = item;
             return scope.disable(model) ? sum : ++sum;
           }, 0));
@@ -170,8 +171,8 @@ angular.module('md.data.table').directive('mdTableBody', function () {
           return count && count === tableCtrl.selectedItems.length;
         };
         
-        scope.$parent.toggleAll = function (items) {
-          var selectableItems = getSelectableItems(items);
+        scope.$parent.toggleAll = function (items, filter) {
+          var selectableItems = getSelectableItems(items, filter);
           
           if(selectableItems.length === tableCtrl.selectedItems.length) {
             tableCtrl.selectedItems.splice(0);
@@ -200,7 +201,8 @@ angular.module('md.data.table').directive('mdTableBody', function () {
       disable: '&mdDisableSelect'
     }
   };
-});
+}]);
+
 
 angular.module('md.data.table').directive('mdTableFoot', function () {
   'use strict';
@@ -225,7 +227,7 @@ angular.module('md.data.table').directive('mdTableFoot', function () {
   };
 });
 
-angular.module('md.data.table').directive('mdTableHead', ['$document', '$mdTable', '$q', function ($document, $mdTable, $q) {
+angular.module('md.data.table').directive('mdTableHead', ['$document', '$mdTable', '$q', '$filter', function ($document, $mdTable, $q, $filter) {
   'use strict';
 
   function postLink(scope, element, attrs, tableCtrl) {
@@ -321,13 +323,15 @@ angular.module('md.data.table').directive('mdTableHead', ['$document', '$mdTable
       var ngRepeat = tElement.parent().find('tbody').find('tr').attr('ng-repeat');
       
       if(ngRepeat) {
-        var items = $mdTable.parse(ngRepeat).items;
+        mdTableRepeat = $mdTable.parse(ngRepeat);
+        var items = mdTableRepeat.items;
+        var filter = mdTableRepeat.filter;
         var checkbox = angular.element('<md-checkbox></md-checkbox>');
         
         checkbox.attr('aria-label', 'Select All');
-        checkbox.attr('ng-click', 'toggleAll(' + items + ')');
+        checkbox.attr('ng-click', 'toggleAll(' + items + ',' + filter + ')');
         checkbox.attr('ng-class', '[mdClasses, {\'md-checked\': allSelected()}]');
-        checkbox.attr('ng-disabled', '!getCount(' + items + ')');
+        checkbox.attr('ng-disabled', '!getCount(' + items + ',' + filter + ')');
         
         tElement.find('tr').prepend(angular.element('<th></th>').append(checkbox));
       }
@@ -692,6 +696,8 @@ angular.module('md.data.table').factory('$mdTable', function () {
     this._tokens = ngRepeat.split(' ');
     this._iterator = 0;
     
+    this.filter = null;
+
     this.item = this.current();
     while(this.hasNext() && this.getNext() !== 'in') {
       this.item += this.current();
@@ -701,6 +707,11 @@ angular.module('md.data.table').factory('$mdTable', function () {
     while(this.hasNext() && ['|', 'track'].indexOf(this.getNext()) === -1) {
       this.items += this.current();
     }
+
+    try {
+        this.filter = ngRepeat.match(/filter:([^ |]+)/)[1];
+    }
+    catch(e) {}
   }
   
   Repeat.prototype.current = function () {
@@ -732,6 +743,7 @@ angular.module('md.data.table').factory('$mdTable', function () {
   };
   
 });
+
 
 angular.module('md.table.templates', ['templates.arrow.html', 'templates.navigate-before.html', 'templates.navigate-first.html', 'templates.navigate-last.html', 'templates.navigate-next.html', 'templates.md-data-table-pagination.html', 'templates.md-data-table-progress.html']);
 
