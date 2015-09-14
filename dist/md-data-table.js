@@ -323,7 +323,7 @@ angular.module('md.data.table').directive('mdTableHead', ['$document', '$mdTable
       var ngRepeat = tElement.parent().find('tbody').find('tr').attr('ng-repeat');
       
       if(ngRepeat) {
-        mdTableRepeat = $mdTable.parse(ngRepeat);
+        var mdTableRepeat = $mdTable.parse(ngRepeat);
         var items = mdTableRepeat.items;
         var filter = mdTableRepeat.filter;
         var checkbox = angular.element('<md-checkbox></md-checkbox>');
